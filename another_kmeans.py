@@ -111,6 +111,7 @@ if __name__ == "__main__":
                             # data_path = os.path.join(data_path1, dire)
                             fd = FeaturesData(name=data_name + '_' + repeat, path=data_path)
                             X, xn, y_true = fd.get_dataset()
+                            X = preprocessing.MinMaxScaler().fit_transform(X)
 
                             # create dataset using make_blobs from sklearn datasets
                             Kmeans = KMeansClustering(X, k, p=p)
