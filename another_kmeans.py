@@ -29,7 +29,7 @@ class KMeansClustering:
     def initialize_random_centroids(self, x):
         subkey = _get_subkey()
         centroids_idx = jax.random.randint(
-            subkey, minval=0, maxval=x.shape[0], shape=(k,))
+            subkey, minval=0, maxval=x.shape[0], shape=(self.k,))
         idx = centroids_idx
         centroids = x[idx, :] + 1e-6  # white noise to prevent zero-gradient if 1st centroid = 1st data point
         centroids = centroids + 1e-6
@@ -91,58 +91,63 @@ class KMeansClustering:
 
 
 if __name__ == "__main__":
-    data_path = Path("D:/PycharmProjects/NGDC_method/Datasets/F/synthetic")
+    data_path_synth = Path("D:/PycharmProjects/NGDC_method/Datasets/F/synthetic")
+    data_path = Path("D:/PycharmProjects/NGDC_method/Datasets/")
+
+    #p = int(input('введите значение p: '))
+    # for k in [5, 15]:
+    #     for v in [2, 5, 10, 15, 20, 200, 2000]:
+    #         for alpha in [0.3, 0.6, 0.9]:
+    #             data_name = f'n=1000_k={k}_v={v}_alpha={alpha}'
+    #for data_name in ['wine', 'fossil', 'brtiss', 'glass', 'spambase', 'pendigits', 'optdigits', 'libras']:
     for p in [1, 2, 3, 4]:
-        for k in [5, 15]:
-            for v in [2, 5, 10, 15, 20, 200, 2000]:
-                for alpha in [0.3, 0.6, 0.9]:
-                    data_name = f'n=1000_k={k}_v={v}_alpha={alpha}'
-                    results = {}
+        data_name = "iris"
+        results = {}
+        for repeat in range(1, 11):
+            ari = []
+            potential_labels = []
+            anotherloop = {}
+            repeat = str(repeat)
+            results[repeat] = {}
+            for i in range(1, 11):
 
-                    for repeat in range(1, 11):
-                        ari = []
-                        potential_labels = []
-                        anotherloop = {}
-                        repeat = str(repeat)
-                        results[repeat] = {}
-                        for i in range(1, 11):
+                anotherloop[i] = {}
+                # data_path = os.path.join(data_path1, dire)
+                #data_name = 'brtiss'
+                fd_syntch = FeaturesData(name=data_name + '_' + repeat, path=data_path)
+                fd = FeaturesData(name=data_name, path=data_path)
+                X, xn, y_true = fd.get_dataset()
+                X = preprocessing.MinMaxScaler().fit_transform(X)
+                #X = preprocess_features(x=X, pp='mm')
+                # create dataset using make_blobs from sklearn datasets
+                Kmeans = KMeansClustering(X, len(np.unique(y_true)), p=p)
+                y_pred = Kmeans.fit(X)
 
-                            anotherloop[i] = {}
-                            # data_path = os.path.join(data_path1, dire)
-                            fd = FeaturesData(name=data_name + '_' + repeat, path=data_path)
-                            X, xn, y_true = fd.get_dataset()
-                            X = preprocessing.MinMaxScaler().fit_transform(X)
+                anotherloop[i]['y_pred'] = y_pred
 
-                            # create dataset using make_blobs from sklearn datasets
-                            Kmeans = KMeansClustering(X, k, p=p)
-                            y_pred = Kmeans.fit(X)
-
-                            anotherloop[i]['y_pred'] = y_pred
-
-                            ari.append(metrics.adjusted_rand_score(y_true, y_pred))
-                            potential_labels.append(y_pred)
+                ari.append(metrics.adjusted_rand_score(y_true, y_pred))
+                potential_labels.append(y_pred)
 
 
-                        results[repeat]['y_true'] = y_true
-                        results[repeat]['y_pred'] = potential_labels[ari.index(max(ari))]
-                        results[repeat]['time'] = 0
-                        results[repeat]['inertia'] = 0
-                        results[repeat]['data_scatter'] = 0
-                        results[repeat]['aris_history'] = 0
-                        results[repeat]['grads_history'] = 0
-                        results[repeat]['inertias_history'] = 0
+            results[repeat]['y_true'] = y_true
+            results[repeat]['y_pred'] = potential_labels[ari.index(max(ari))]
+            results[repeat]['time'] = 0
+            results[repeat]['inertia'] = 0
+            results[repeat]['data_scatter'] = 0
+            results[repeat]['aris_history'] = 0
+            results[repeat]['grads_history'] = 0
+            results[repeat]['inertias_history'] = 0
 
-                    print_the_evaluated_results(results)
-                    print(data_name)
+        print_the_evaluated_results(results)
+        print(data_name, p)
 
-                    # save_a_dict(
-                    #     a_dict=results, name=data_name,
-                    #     save_path=f'D:/PycharmProjects/NGDC_method/Results/Pickle_Ind_km_clu_p={p}'
-                    # )
-                    #
-                    # with open(f'D:/PycharmProjects/NGDC_method/txt_results_km/results_p={p}v3.txt', 'a') as f:
-                    #     f.write(print_the_evaluated_results(results))
-                    #     print(data_name)
-                    #     f.write(data_name)
-                    #     f.write('\n')
-                    #     f.write('\n')
+    # save_a_dict(
+    #     a_dict=results, name=data_name,
+    #     save_path=f'D:/PycharmProjects/NGDC_method/Results/14_07_24_Pickle_Ind_km_cluv2_p={p}'
+    # )
+        with open(f'D:/PycharmProjects/NGDC_method/Results/res_with_stand/p={p}/kmeans_{data_name}_results.txt', 'a') as f:
+            f.write(print_the_evaluated_results(results))
+            print(data_name)
+            f.write(data_name)
+            f.write('\n')
+            f.write('\n')
