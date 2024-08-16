@@ -1,5 +1,4 @@
 import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import os
 import matplotlib.pyplot as plt
 from sklearn import cluster
@@ -91,10 +90,9 @@ class KMeansClustering:
 
 
 if __name__ == "__main__":
-    data_path_synth = Path("D:/PycharmProjects/NGDC_method/Datasets/F/synthetic")
-    data_path = Path("D:/PycharmProjects/NGDC_method/Datasets/")
+    data_path_synth = Path("F/synthetic")
+    data_path = Path("/Datasets/")
 
-    #p = int(input('введите значение p: '))
     # for k in [5, 15]:
     #     for v in [2, 5, 10, 15, 20, 200, 2000]:
     #         for alpha in [0.3, 0.6, 0.9]:
@@ -112,8 +110,6 @@ if __name__ == "__main__":
             for i in range(1, 11):
 
                 anotherloop[i] = {}
-                # data_path = os.path.join(data_path1, dire)
-                #data_name = 'brtiss'
                 fd_syntch = FeaturesData(name=data_name + '_' + repeat, path=data_path)
                 fd = FeaturesData(name=data_name, path=data_path)
                 X, xn, y_true = fd.get_dataset()
@@ -139,7 +135,6 @@ if __name__ == "__main__":
             results[repeat]['inertias_history'] = 0
 
         print_the_evaluated_results(results)
-        print(data_name, p)
 
     # save_a_dict(
     #     a_dict=results, name=data_name,
