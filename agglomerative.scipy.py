@@ -114,74 +114,57 @@ class ClusteringEstimators:
         )
         return self.clusters
 
-K = [5, 15]
-V = [2, 5, 10, 15, 20, 200, 2000]
-ALPHA = [0.3, 0.6, 0.9]
-for k in K:
-    for v in V:
-        for alpha in ALPHA:
-            data_path1 = Path("D:/PycharmProjects/NGDC_method/Datasets")
-            data_name = f'n=1000_k={k}_v={v}_alpha={alpha}'
 
-            if "n=" in data_name or "k=" in data_name or "v=" in data_name:
-                synthetic_data = True
-            else:
-                synthetic_data = False
+data_path = Path(".../Datasets")
+data_name = f'n=1000_k={k}_v={v}_alpha={alpha}'
 
-            results = {}
-            for repeat in range(1, 11):
+if "n=" in data_name or "k=" in data_name or "v=" in data_name:
+    synthetic_data = True
+else:
+    synthetic_data = False
 
-                repeat = str(repeat)
-                results[repeat] = {}
+results = {}
+for repeat in range(1, 11):
 
-                from gdcm.algorithms.clustering_methods_competitors import ClusteringEstimators
+    repeat = str(repeat)
+    results[repeat] = {}
 
-                if synthetic_data is True:
-                    dire = "F\synthetic"
-                    dn = data_name + "_" + repeat
+    from gdcm.algorithms.clustering_methods_competitors import ClusteringEstimators
 
-                else:
-                    dire = "F"
-                    dn = data_name
+    if synthetic_data is True:
+        dire = "F\synthetic"
+        dn = data_name + "_" + repeat
 
-                data_path = os.path.join(data_path1, dire)
-                fd = FeaturesData(name=dn, path=data_path)
+    else:
+        dire = "F"
+        dn = data_name
 
-                x, xn, y_true = fd.get_dataset()
-                x = preprocess_features(x=x, pp="mm")
-                results[repeat]['y_true'] = y_true
+    data_path = os.path.join(data_path, dire)
+    fd = FeaturesData(name=dn, path=data_path)
 
-                n_clusters = len(np.unique(y_true))
+    x, xn, y_true = fd.get_dataset()
+    x = preprocess_features(x=x, pp="mm")
+    results[repeat]['y_true'] = y_true
 
-                data_dist = pdist(x, metric='minkowski', p=2)
-                data_linkage = linkage(data_dist, method='average')
+    n_clusters = len(np.unique(y_true))
 
-                clusters = fcluster(data_linkage, t=n_clusters, criterion='maxclust')
+    data_dist = pdist(x, metric='minkowski', p=2)
+    data_linkage = linkage(data_dist, method='average')
 
-                if xn.shape[0] != 0:
-                    xn = preprocess_features(x=xn, pp="mm")
+    clusters = fcluster(data_linkage, t=n_clusters, criterion='maxclust')
 
+    if xn.shape[0] != 0:
+        xn = preprocess_features(x=xn, pp="mm")
+        
+    start = time.process_time()
+  
+    y_pred = fcluster(data_linkage, t=n_clusters, criterion='maxclust')
+    end = time.process_time()
+    results[repeat]['y_pred'] = y_pred
+    results[repeat]['time'] = end-start
+    results[repeat]['inertia'] = 0
+    results[repeat]['data_scatter'] = 0
 
-                # instantiate and fit
-                start = time.process_time()
-                # cu = ClusteringEstimators(
-                #     algorithm_name='a_clu',
-                #     n_clusters=5,
-                #     n_init=10
-                # )
-
-                #cu.instantiate_estimator_with_parameters()
-                y_pred = fcluster(data_linkage, t=n_clusters, criterion='maxclust')
-                end = time.process_time()
-                # save results and logs
-                results[repeat]['y_pred'] = y_pred
-                results[repeat]['time'] = end-start
-                results[repeat]['inertia'] = 0
-                results[repeat]['data_scatter'] = 0
-
-            save_a_dict(
-                    a_dict=results, name=data_name + "_" + 'a_clu'+'_' + f"p={2}", save_path="C:/Users/Tigran/PycharmProjects/NGDC_method/Results/Pickle_a_clu_p=2"
-                )
-            print_the_evaluated_results(results)
-            print(data_name)
-            #print(results.keys())
+save_a_dict(
+        a_dict=results, name=data_name + "_" + 'a_clu'+'_' + f"p={2}", save_path="/Pickle_a_clu_p=2"
+    )
